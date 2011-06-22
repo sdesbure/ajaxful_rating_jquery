@@ -87,8 +87,8 @@ module AjaxfulRating # :nodoc:
     
     # Builds the DOM id attribute for the wrapper in view.
     def wrapper_dom_id(options = {})
-      options = options.symbolize_keys.slice(:size, :dimension)
-      options = options.select { |k, v| v.present? or (v == false) }.map do |k, v|
+      options = options.to_hash.symbolize_keys.slice(:small, :dimension)
+      options = options.map do |k, v|
         if k == :dimension
           v.to_s
         else

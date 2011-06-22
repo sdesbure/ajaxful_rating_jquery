@@ -81,29 +81,35 @@ module AjaxfulRating # :nodoc:
         :width => "#{(value / rateable.class.max_stars.to_f) * 100}%",
         :zIndex => (rateable.class.max_stars + 2 - value).to_s
       })
-      @template.content_tag(:li) do
-        if !options[:force_static] && (user && options[:current_user] == user &&
-          (!already_rated || rateable.axr_config[:allow_update]))
-          link_star_tag(value, css_class)
-        else
-          @template.content_tag(:span, show_value, :class => css_class, :title => i18n(:current))
-        end
+
+      if !options[:force_static] && (user && options[:current_user] == user &&
+        (!already_rated || rateable.axr_config[:allow_update]))
+        @template.content_tag(:li, link_star_tag(value, css_class))
+      else
+        @template.content_tag(:li, @template.content_tag(:span, show_value, :class => css_class, :title => i18n(:current)))
       end
     end
-    
+
     def link_star_tag(value, css_class)
-      html = {
-        :"data-method" => options[:method],
-        :"data-stars" => value,
-        :"data-dimension" => options[:dimension],
-        :"data-size" => options[:size],
-        :"data-show_user_rating" => options[:show_user_rating],
-        :class => css_class,
-        :title => i18n(:hover, value)
+      query = {
+        :stars => value,
+        :dimension => options[:dimension],
+        :small => options[:small],
+        :show_user_rating => options[:show_user_rating]
+      }.to_query
+      config = {
+        :url => "#{remote_options[:url]}?#{query}"
       }
-      @template.link_to(value, options[:url], html)
+      html_options = {
+        :class => css_class,
+        :title => i18n(:hover, value),
+        :method => :post,
+        :remote => true
+      }
+
+      @template.link_to(value, remote_options.merge(config), html_options)
     end
-    
+
     def wrapper_tag
       @template.content_tag(:div, ratings_tag, :class => "ajaxful-rating-wrapper",
         :id => rateable.wrapper_dom_id(options))

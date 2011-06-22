@@ -39,13 +39,18 @@ module AjaxfulRating # :nodoc:
       @options[:show_user_rating] = @options[:show_user_rating].to_s == 'true'
       @options[:wrap] = @options[:wrap].to_s == 'true'
       
-      if @options[:url].nil?
-        rateable_name = ActionController::RecordIdentifier.singular_class_name(rateable)
+      @remote_options = {
+        :url => nil,
+        :method => :post
+      }.merge(remote_options)
+      
+      if @remote_options[:url].nil?
+        rateable_name = ActionController::RecordIdentifier.dom_class(rateable)
         url = "rate_#{rateable_name}_path"
         if @template.respond_to?(url)
           @options[:url] = @template.send(url, rateable)
         else
-          raise(MissingRateRoute)
+          raise(Errors::MissingRateRoute)
         end
       end
     end
@@ -65,13 +70,7 @@ module AjaxfulRating # :nodoc:
       stars += (1..rateable.class.max_stars).map do |i|
         star_tag(i)
       end
-      if options[:size] == 'small'
-        size = ' small'
-      elsif options[:size] == 'medium'
-        size = ' medium'
-      end
-      # When using rails_xss plugin, it needs to render as HTML
-      @template.content_tag(:ul, stars.join.try(:html_safe), :class => "ajaxful-rating#{size}")
+      @template.content_tag(:ul, stars.join.html_safe, :class => "ajaxful-rating#{' small' if options[:small]}")
     end
     
     def star_tag(value)
@@ -82,11 +81,12 @@ module AjaxfulRating # :nodoc:
         :zIndex => (rateable.class.max_stars + 2 - value).to_s
       })
 
-      if !options[:force_static] && (user && options[:current_user] == user &&
-        (!already_rated || rateable.axr_config[:allow_update]))
-        @template.content_tag(:li, link_star_tag(value, css_class))
-      else
-        @template.content_tag(:li, @template.content_tag(:span, show_value, :class => css_class, :title => i18n(:current)))
+      @template.content_tag(:li) do
+        if !options[:force_static] && (user && options[:current_user] == user && (!already_rated || rateable.axr_config[:allow_update]))
+          link_star_tag(value, css_class)
+        else
+          @template.content_tag(:span, show_value, :class => css_class, :title => i18n(:current))
+        end
       end
     end
 
@@ -97,17 +97,17 @@ module AjaxfulRating # :nodoc:
         :small => options[:small],
         :show_user_rating => options[:show_user_rating]
       }.to_query
-      config = {
-        :url => "#{remote_options[:url]}?#{query}"
-      }
-      html_options = {
+      
+      options = {
         :class => css_class,
         :title => i18n(:hover, value),
-        :method => :post,
+        :method => remote_options[:method] || :post,
         :remote => true
       }
+      
+      href = "#{remote_options[:url]}?#{query}"
 
-      @template.link_to(value, remote_options.merge(config), html_options)
+      @template.link_to(value, href, options)
     end
 
     def wrapper_tag

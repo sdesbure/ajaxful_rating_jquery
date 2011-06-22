@@ -71,12 +71,12 @@ module AjaxfulRating # :nodoc:
     #   end
     def rate(stars, user, dimension = nil)
       return false if (stars.to_i > self.class.max_stars)
-      raise AlreadyRatedError if (!self.class.axr_config[:allow_update] && rated_by?(user, dimension))
+      raise Errors::AlreadyRatedError if (!self.class.axr_config[:allow_update] && rated_by?(user, dimension))
 
       rate = if self.class.axr_config[:allow_update] && rated_by?(user, dimension)
         rate_by(user, dimension)
       else
-        returning rates(dimension).build do |r|
+        rates(dimension).build.tap do |r|
           r.rater = user
         end
       end
@@ -95,8 +95,10 @@ module AjaxfulRating # :nodoc:
           v.to_s == 'true' ? k.to_s : "no-#{k}"
         end
       end
-      options.unshift("ajaxful_rating")
-      ApplicationController.helpers.dom_id(self, options.sort.join('_'))
+      options = options.delete_if { |x| x.empty? }
+      prefix = "ajaxful_rating"
+      prefix << "_#{options.sort.join('_')}" unless options.empty?
+      ApplicationController.helpers.dom_id(self, prefix)
     end
 
     # Returns an array with the users that have rated this object for the

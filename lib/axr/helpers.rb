@@ -131,9 +131,9 @@ module AjaxfulRating # :nodoc:
     # 
     #   ajaxful_rating:
     #     helper:
-    #       global_average: "Global rating average: {{value}} out of {{max}}"
-    #       user_rating: "Your rating: {{value}} out of {{max}}"
-    #       hover: "Rate {{value}} out of {{max}}"    def ratings_for(*args)
+    #       global_average: "Global rating average: %{value} out of %{max}"
+    #       user_rating: "Your rating: %{value} out of %{max}"
+    #       hover: "Rate %{value} out of %{max}"    def ratings_for(*args)
     def ratings_for(*args)
       @axr_css ||= CSSBuilder.new
       options = args.extract_options!.to_hash.symbolize_keys.slice(:small, :remote_options,
@@ -141,8 +141,8 @@ module AjaxfulRating # :nodoc:
 
       remote_options = options.delete(:remote_options) || {}
       rateable = args.shift
-      user = args.shift || (respond_to?(:current_user) ? current_user : raise(NoUserSpecified))
-      StarsBuilder.new(rateable, user, self, @axr_css, options).render
+      user = args.shift || (respond_to?(:current_user) ? current_user : raise(Errors::NoUserSpecified))
+      StarsBuilder.new(rateable, user, self, @axr_css, options, remote_options).render
     end
   end
 end

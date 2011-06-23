@@ -2,12 +2,12 @@ module AjaxfulRating # :nodoc:
   class StarsBuilder # :nodoc:
     include AjaxfulRating::Locale
     
-    attr_reader :rateable, :user, :options
+    attr_reader :rateable, :user, :options, :remote_options
     
-    def initialize(rateable, user_or_static, template, css_builder, options = {})
+    def initialize(rateable, user_or_static, template, css_builder, options = {}, remote_options = {})
       @user = user_or_static unless user_or_static == :static
       @rateable, @template, @css_builder = rateable, template, css_builder
-      apply_stars_builder_options!(options)
+      apply_stars_builder_options!(options, remote_options)
     end
     
     def show_value
@@ -25,7 +25,7 @@ module AjaxfulRating # :nodoc:
     
     private
     
-    def apply_stars_builder_options!(options)
+    def apply_stars_builder_options!(options, remote_options)
       @options = {
         :url => nil,
         :method => :post,
@@ -48,7 +48,7 @@ module AjaxfulRating # :nodoc:
         rateable_name = ActionController::RecordIdentifier.dom_class(rateable)
         url = "rate_#{rateable_name}_path"
         if @template.respond_to?(url)
-          @options[:url] = @template.send(url, rateable)
+          @remote_options[:url] = @template.send(url, rateable)
         else
           raise(Errors::MissingRateRoute)
         end

@@ -1,12 +1,14 @@
 h1. Ajaxful Rating jQuery
 
-Provides a simple way to add rating functionality to your application. This fork uses jQuery instead of prototype and uses unobtrusive javascript. Currently, it only supports Rails 2.3.x.
+Provides a simple way to add rating functionality to your application. This fork uses jQuery instead of prototype and uses unobtrusive javascript.
+
+This fork is a merge of "kamui/ajaxful_rating_jquery":http://github.com/kamui/ajaxful_rating_jquery and the rails3 branch of "edgarjs/ajaxful-rating":http://github.com/edgarjs/ajaxful-rating and works on Rails 3. I've taken some care to update the documentation here but there's probably things that are missing or incorrect.
 
 !http://s3.amazonaws.com/ember/v9SvvO3rdSkA40e1sXBf8JgpuaWCC0uB_o.png!
 
 h2. Repository
 
-Find it at "http://github.com/kamui/ajaxful_rating_jquery":http://github.com/kamui/ajaxful_rating_jquery
+Find it at "http://github.com/danbee/ajaxful_rating_jquery":http://github.com/danbee/ajaxful_rating_jquery
 
 The original repository, which uses Prototype, is located at "http://github.com/edgarjs/ajaxful-rating":http://github.com/edgarjs/ajaxful-rating
 
@@ -23,17 +25,13 @@ h2. Instructions
 
 h3. Install
 
-To install the gem run the next command:
+To install the gem add it to your Gemfile:
 
-  @gem install ajaxful_rating_jquery@
-  
-You can configure it in your environment.rb file also:
-
-  @config.gem "ajaxful_rating_jquery"@
+  gem 'ajaxful_rating_jquery', :git => 'git@github.com:danbee/ajaxful_rating_jquery.git'
 
 h3. Generate
 
-  @script/generate ajaxful_rating UserModelName@
+  rails g ajaxful_rating UserModelName@
   
 The generator takes one argument: UserModelName, which is the name of your *current*
 user model. This is necessary to link both the rate and user models.
@@ -44,8 +42,8 @@ Example:
 _I suppose you have generated already an authenticated model..._
 
 <pre>
-script/generate authenticated user sessions
-script/generate ajaxful_rating user
+rails g  authenticated user sessions
+rails g  ajaxful_rating user
 </pre>
 
 So this call will create a Rate model and will link it to your User model.
@@ -77,7 +75,13 @@ end
 Finally, as a mere recommendation to make it even easier, modify your routes to
 map a rate action:
 
-  @map.resources :cars, :member => {:rate => :post}@
+<pre>
+resources :cars do
+  member do
+    post :rate
+  end
+end
+</pre>
 
 h3. Use it
 

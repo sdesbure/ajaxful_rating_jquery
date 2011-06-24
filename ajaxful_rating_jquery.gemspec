@@ -8,10 +8,10 @@ Gem::Specification.new do |s|
   s.version = "3.0.0.beta3"
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Edgar J. Suarez", "Denis Odorcic"]
-  s.date = %q{2010-10-14}
+  s.authors = ["Edgar J. Suarez", "Denis Odorcic", "Dan Barber"]
+  s.date = %q{2011-06-24}
   s.description = %q{Provides a simple way to add rating functionality to your application.}
-  s.email = ["edgar.js@gmail.com", "denis.odorcic@gmail.com"]
+  s.email = ["edgar.js@gmail.com", "denis.odorcic@gmail.com", "danbee@gmail.com"]
   s.extra_rdoc_files = [
     "README.textile"
   ]
@@ -21,8 +21,8 @@ Gem::Specification.new do |s|
      "Manifest",
      "README.textile",
      "Rakefile",
-     "ajaxful_rating.gemspec",
-     "lib/ajaxful_rating.rb",
+     "ajaxful_rating_jquery.gemspec",
+     "lib/ajaxful_rating_jquery.rb",
      "lib/axr/css_builder.rb",
      "lib/axr/errors.rb",
      "lib/axr/helpers.rb",

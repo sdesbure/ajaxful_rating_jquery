@@ -27,11 +27,11 @@ h3. Install
 
 To install the gem add it to your Gemfile:
 
-  gem 'ajaxful_rating_jquery', :git => 'git@github.com:danbee/ajaxful_rating_jquery.git'
+  @gem 'ajaxful_rating_jquery', :git => 'git@github.com:danbee/ajaxful_rating_jquery.git'
 
 h3. Generate
 
-  rails g ajaxful_rating UserModelName@
+  @rails g ajaxful_rating UserModelName@
   
 The generator takes one argument: UserModelName, which is the name of your *current*
 user model. This is necessary to link both the rate and user models.

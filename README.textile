@@ -27,7 +27,7 @@ h3. Install
 
 To install the gem add it to your Gemfile:
 
-  @gem 'ajaxful_rating_jquery', :git => 'git@github.com:danbee/ajaxful_rating_jquery.git'
+<pre>gem 'ajaxful_rating_jquery', :git => 'git@github.com:danbee/ajaxful_rating_jquery.git'</pre>
 
 h3. Generate
 

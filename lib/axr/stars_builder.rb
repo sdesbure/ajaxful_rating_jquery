@@ -34,90 +34,87 @@ module AjaxfulRating # :nodoc:
         :show_user_rating => false,
         :force_static => false,
         :current_user => (@template.current_user if @template.respond_to?(:current_user))
-        }.merge(options)
+      }.merge(options)
 
-        @options[:show_user_rating] = @options[:show_user_rating].to_s == 'true'
-        @options[:wrap] = @options[:wrap].to_s == 'true'
+      @options[:show_user_rating] = @options[:show_user_rating].to_s == 'true'
+      @options[:wrap] = @options[:wrap].to_s == 'true'
 
-        @remote_options = {
-          :url => nil,
-          :method => :post
-          }.merge(remote_options)
+      @remote_options = {
+        :url => nil,
+        :method => :post
+      }.merge(remote_options)
 
-          if @remote_options[:url].nil?
-            rateable_name = ActionController::RecordIdentifier.dom_class(rateable)
-            url = "rate_#{rateable_name}_path"
-            if @template.respond_to?(url)
-              @remote_options[:url] = @template.send(url, rateable)
-            else
-              raise(Errors::MissingRateRoute)
-            end
-          end
+      if @remote_options[:url].nil?
+        rateable_name = ActionController::RecordIdentifier.dom_class(rateable)
+        url = "rate_#{rateable_name}_path"
+        if @template.respond_to?(url)
+          @remote_options[:url] = @template.send(url, rateable)
+        else
+          raise(Errors::MissingRateRoute)
         end
+      end
+    end
 
-        def ratings_tag
-          stars = []
-          width = (show_value / rateable.class.max_stars.to_f) * 100
-          li_class = "axr-#{show_value}-#{rateable.class.max_stars}".gsub('.', '_')
-          @css_builder.rule('.ajaxful-rating', :width => (rateable.class.max_stars * 25))
-          @css_builder.rule('.ajaxful-rating.medium',
-          :width => (rateable.class.max_stars * 18)) if options[:size] == 'medium'
-          @css_builder.rule('.ajaxful-rating.small',
-          :width => (rateable.class.max_stars * 10)) if options[:size] == 'small'
+    def ratings_tag
+      stars = []
+      width = (show_value / rateable.class.max_stars.to_f) * 100
+      li_class = "axr-#{show_value}-#{rateable.class.max_stars}".gsub('.', '_')
+      @css_builder.rule('.ajaxful-rating', :width => (rateable.class.max_stars * 25))
+      @css_builder.rule('.ajaxful-rating.medium',
+                        :width => (rateable.class.max_stars * 18)) if options[:size] == 'medium'
+      @css_builder.rule('.ajaxful-rating.small',
+                        :width => (rateable.class.max_stars * 10)) if options[:size] == 'small'
 
-          stars << @template.content_tag(:li, i18n(:current), :class => "show-value",
-          :style => "width: #{width}%")
-          stars += (1..rateable.class.max_stars).map do |i|
-            star_tag(i)
-          end
-          if options[:size] == 'small'
-            size = ' small'
-          elsif options[:size] == 'medium'
-            size = ' medium'
-          end
-          @template.content_tag(:ul, stars.join.try(:html_safe), :class => "ajaxful-rating#{size}")
+      stars << @template.content_tag(:li, i18n(:current), :class => "show-value",
+                                     :style => "width: #{width}%")
+      stars += (1..rateable.class.max_stars).map{ |i| star_tag(i) }
+      if options[:size] == 'small'
+        size = ' small'
+      elsif options[:size] == 'medium'
+        size = ' medium'
+      end
+      @template.content_tag(:ul, stars.join.try(:html_safe), :class => "ajaxful-rating#{size}")
+    end
+
+    def star_tag(value)
+      already_rated = rateable.rated_by?(user, options[:dimension]) if user
+      css_class = "stars-#{value}"
+      @css_builder.rule(".ajaxful-rating .#{css_class}", {
+        :width => "#{(value / rateable.class.max_stars.to_f) * 100}%",
+        :zIndex => (rateable.class.max_stars + 2 - value).to_s
+      })
+
+      @template.content_tag(:li) do
+        if !options[:force_static] && (user && options[:current_user] == user && (!already_rated || rateable.axr_config[:allow_update]))
+          link_star_tag(value, css_class)
+        else
+          @template.content_tag(:span, show_value, :class => css_class, :title => i18n(:current))
         end
+      end
+    end
 
-        def star_tag(value)
-          already_rated = rateable.rated_by?(user, options[:dimension]) if user
-          css_class = "stars-#{value}"
-          @css_builder.rule(".ajaxful-rating .#{css_class}", {
-            :width => "#{(value / rateable.class.max_stars.to_f) * 100}%",
-            :zIndex => (rateable.class.max_stars + 2 - value).to_s
-            })
+    def link_star_tag(value, css_class)
+      query = {
+        :stars => value,
+        :dimension => options[:dimension],
+        :size => options[:size],
+        :show_user_rating => options[:show_user_rating]
+      }.to_query
 
-            @template.content_tag(:li) do
-              if !options[:force_static] && (user && options[:current_user] == user && (!already_rated || rateable.axr_config[:allow_update]))
-                link_star_tag(value, css_class)
-              else
-                @template.content_tag(:span, show_value, :class => css_class, :title => i18n(:current))
-              end
-            end
-          end
+      options = {
+        :class => css_class,
+        :title => i18n(:hover, value),
+        :method => remote_options[:method] || :post,
+        :remote => true
+      }
 
-          def link_star_tag(value, css_class)
-            query = {
-              :stars => value,
-              :dimension => options[:dimension],
-              :size => options[:size],
-              :show_user_rating => options[:show_user_rating]
-              }.to_query
+      href = "#{remote_options[:url]}?#{query}"
 
-              options = {
-                :class => css_class,
-                :title => i18n(:hover, value),
-                :method => remote_options[:method] || :post,
-                :remote => true
-              }
+        @template.link_to(value, href, options)
+    end
 
-              href = "#{remote_options[:url]}?#{query}"
-
-              @template.link_to(value, href, options)
-            end
-
-            def wrapper_tag
-              @template.content_tag(:div, ratings_tag, :class => "ajaxful-rating-wrapper",
-              :id => rateable.wrapper_dom_id(options))
-            end
-          end
-        end
+    def wrapper_tag
+      @template.content_tag(:div, ratings_tag, :class => "ajaxful-rating-wrapper",
+                            :id => rateable.wrapper_dom_id(options))
+    end
+end
